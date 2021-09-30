@@ -1,0 +1,64 @@
+---
+title: "Lab_1"
+author: "Dingxin Lu"
+date: "9/30/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries and data wrangling
+
+* Load required libraries
+* Assign the data from medicaldata::covid_testing to a new covid dataframe
+* Filter the data for only COVID tests
+* Change the test results to all start with capital letters (hint: check out the function stringr::str_to_title)
+* Create a new dataframe covid_summary that calculates the percent of positive tests per day (hint: use summarise())
+* Create a new dataframe covid_ages that filters the data for only positive test results and creates a variable for age categories (0 - 10, 11 - 20, 21 - 30, 31 - 40, 41 - 50, 51 - 60, 61+)
+
+```{r Prep}
+# Load libraries
+library(medicaldata)
+library(tidyverse)
+library(stringr)
+
+# Assign the data
+covid <- covid_testing
+
+# Data wrangling
+covid <- filter(covid, test_id == "covid")
+covid$result <- str_to_title(covid$result)
+
+covid_summary <- covid %>%
+  group_by(pan_day) %>%
+  summarise(percent_of_positive = sum(result == "Positive")/n() * 100)
+
+covid_ages <- covid %>%
+  filter(result == "Positive") %>%
+  mutate(age_categories = case_when(age >= 0 & age < 11 ~ "0-10",
+                                    age >= 11 & age < 21 ~ "11-20",
+                                    age >= 21 & age < 31 ~ "21-30",
+                                    age >= 31 & age < 41 ~ "31-40",
+                                    age >= 41 & age < 51 ~ "41-50",
+                                    age >= 51 & age < 61 ~ "51-60",
+                                    age >= 61 ~ "61+"))
+```
+
+# Plot A
+
+* Make a stacked bar plot of the test results by day
+* Change the colors using the following hex code colors: #1f77b4, #e377c2 and #2ca02c
+* Change the labels on the x-axis, y-axis, title, and legend
+* Use theme_minimal() to remove the gray background
+* Use theme() to center the title
+* Use geom_segment() and annotate() to draw the arrow and write text on the plot
+
+```{r Plot_A}
+ggplot(covid, aes(x = pan_day,
+                  fill = result)) +
+  geom_bar(position = "stack")
+```
