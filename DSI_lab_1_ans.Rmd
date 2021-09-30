@@ -32,9 +32,11 @@ covid <- covid_testing
 # Data wrangling
 covid <- filter(covid, test_id == "covid")
 covid$result <- str_to_title(covid$result)
+
 covid_summary <- covid %>%
   group_by(pan_day) %>%
   summarise(percent_of_positive = sum(result == "Positive")/n() * 100)
+
 covid_ages <- covid %>%
   filter(result == "Positive") %>%
   mutate(age_categories = case_when(age >= 0 & age < 11 ~ "0-10",
