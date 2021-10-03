@@ -26,17 +26,21 @@ library(medicaldata)
 library(tidyverse)
 library(stringr)
 
-# Assign the data
+# Assign the data from medicaldata::covid_testing to a new covid dataframe
 covid <- covid_testing
 
-# Data wrangling
+# Filter the data for only COVID tests
 covid <- filter(covid, test_id == "covid")
+
+# Change the test results to all start with capital letters
 covid$result <- str_to_title(covid$result)
 
+# Create a new dataframe covid_summary that calculates the percent of positive tests per day 
 covid_summary <- covid %>%
   group_by(pan_day) %>%
   summarise(percent_of_positive = sum(result == "Positive")/n() * 100)
 
+# Create a new dataframe covid_ages that filters the data for only positive test results and creates a variable for age categories
 covid_ages <- covid %>%
   filter(result == "Positive") %>%
   mutate(age_categories = case_when(age >= 0 & age < 11 ~ "0-10",
@@ -60,5 +64,43 @@ covid_ages <- covid %>%
 ```{r Plot_A}
 ggplot(covid, aes(x = pan_day,
                   fill = result)) +
-  geom_bar(position = "stack")
+  geom_bar(position = "stack") + # make a stacked bar plot
+  scale_fill_manual(values=c("#1f77b4", "#e377c2", "#2ca02c")) + # change the bar plot in specific colors
+  labs(title="COVID-19 Test Results at CHOP: \n First 107 Days of the Pandemic", # Change the labels on the x-axis, y-axis and title
+       x ="Pandemic Day", 
+       y = "Total Number of Tests") +
+  guides(fill = guide_legend(title = "Test Result Categories")) + # Change the label for legend
+  theme_minimal() + # remove the gray background (A minimalistic theme with no background annotations)
+  theme(plot.title = element_text(hjust = 0.5)) + # adjusting the title to be centered
+  geom_segment(aes(x = 69, 
+               y = 230, 
+               xend = 79, 
+               yend = 20),
+               size = 0.7,
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  annotate(geom="text", 
+           x = 70,
+           y = 270,
+           label = "Highest Number of \n Positive Tests (20) \n on Day 79")
+  
+  
 ```
+
+# Plot B
+* Use the covid_summary dataframe
+* Make a bar plot and change the colors of your bar plot
+* Using scale_y_continuous() change the y-axis labels to percents
+* Change the labels on the x-axis, y-axis, and title
+* Use theme_minimal() to remove the gray background
+* Use theme() to center the title and remove the legend
+
+# Plot C
+* Use the covid_ages dataframe
+* Make a bar plot and change the colors of your bar plot
+* Use theme_minimal() to remove the gray background
+* Use theme() to center the title, remove the legend, and rotate the x-axis labels
+
+# Putting the plots together
+* Use ggpubr::ggarrange to arrange the plots
+* Label the plots “A”, “B”, and “C”
+* Create a common legend and put this at the bottom of the plot
