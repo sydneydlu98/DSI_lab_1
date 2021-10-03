@@ -154,7 +154,7 @@ plot_C
 * Label the plots “A”, “B”, and “C”
 * Create a common legend and put this at the bottom of the plot
 
-```{r fig.width = 10, fig.height = 7}
+```{r fig.width = 8, fig.height = 7}
 # arrange the plots and label the plots “A”, “B”, and “C”
 covid_combined <- ggarrange(plot_A,
                             ggarrange(plot_B, 
