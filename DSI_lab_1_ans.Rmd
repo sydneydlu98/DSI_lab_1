@@ -3,16 +3,22 @@ title: "Lab_1"
 author: "Dingxin Lu"
 date: "9/30/2021"
 output:
-  pdf_document: default
-  html_document: default
+  html_document:
+    toc: yes
+    toc_depth: 1
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '1'
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Lab #1: Recreating a Figure in ggplot
+Dingxin Lu
+Worked with Peizheng Chen in class and outside of class
 
 # Load libraries and data wrangling
-
 * Load required libraries
 * Assign the data from medicaldata::covid_testing to a new covid dataframe
 * Filter the data for only COVID tests
@@ -20,12 +26,16 @@ knitr::opts_chunk$set(echo = TRUE)
 * Create a new dataframe covid_summary that calculates the percent of positive tests per day (hint: use summarise())
 * Create a new dataframe covid_ages that filters the data for only positive test results and creates a variable for age categories (0 - 10, 11 - 20, 21 - 30, 31 - 40, 41 - 50, 51 - 60, 61+)
 
-```{r Prep}
+```{r message=FALSE}
 # Load libraries
 library(medicaldata)
 library(tidyverse)
 library(stringr)
+library(ggpubr)
+library(ggplot2)
+```
 
+```{r}
 # Assign the data from medicaldata::covid_testing to a new covid dataframe
 covid <- covid_testing
 
@@ -61,29 +71,33 @@ covid_ages <- covid %>%
 * Use theme() to center the title
 * Use geom_segment() and annotate() to draw the arrow and write text on the plot
 
-```{r Plot_A}
-ggplot(covid, aes(x = pan_day,
-                  fill = result)) +
+```{r fig.width = 10, fig.height = 4}
+plot_A <- ggplot(covid, 
+                 aes(x = pan_day,
+                     fill = result)) +
   geom_bar(position = "stack") + # make a stacked bar plot
-  scale_fill_manual(values=c("#1f77b4", "#e377c2", "#2ca02c")) + # change the bar plot in specific colors
+  scale_fill_manual(values=c("#1f77b4", 
+                             "#e377c2", 
+                             "#2ca02c")) + # change the bar plot in specific colors
   labs(title="COVID-19 Test Results at CHOP: \n First 107 Days of the Pandemic", # Change the labels on the x-axis, y-axis and title
        x ="Pandemic Day", 
        y = "Total Number of Tests") +
   guides(fill = guide_legend(title = "Test Result Categories")) + # Change the label for legend
-  theme_minimal() + # remove the gray background (A minimalistic theme with no background annotations)
-  theme(plot.title = element_text(hjust = 0.5)) + # adjusting the title to be centered
-  geom_segment(aes(x = 69, 
+  theme_minimal() + # remove the gray background
+  theme(plot.title = element_text(hjust = 0.5, size=18)) + # adjusting the title to be centered
+  geom_segment(aes(x = 69, # draw the arrow on the plot
                y = 230, 
                xend = 79, 
                yend = 20),
                size = 0.7,
                arrow = arrow(length = unit(0.5, "cm"))) +
-  annotate(geom="text", 
-           x = 70,
-           y = 270,
-           label = "Highest Number of \n Positive Tests (20) \n on Day 79")
-  
-  
+  annotate(geom="text", # write text on the plot
+           x = 69,
+           y = 290,
+           label = "Highest Number of \n Positive Tests (20) \n on Day 79",
+           size = 3.5)
+
+plot_A
 ```
 
 # Plot B
@@ -94,13 +108,62 @@ ggplot(covid, aes(x = pan_day,
 * Use theme_minimal() to remove the gray background
 * Use theme() to center the title and remove the legend
 
+```{r fig.width = 6, fig.height = 4}
+plot_B <- ggplot(covid_summary, 
+                 aes(x = pan_day,
+                     y = percent_of_positive / 100)) +
+  geom_bar(stat = "identity", # make a bar plot based on percentage 
+           fill = "#2ca02c") + # change the color of the bar plot to a specific color
+  scale_y_continuous(labels=scales::percent) + # change the y-axis labels to percents
+  labs(title="Percent of Positive \n Test Results by Day", # Change the labels on the x-axis, y-axis and title
+       x ="Pandemic Day", 
+       y = "Percent Positive Tests") + # Change the labels on the x-axis, y-axis, and title
+  theme_minimal() + # remove the gray background
+  theme(plot.title = element_text(hjust = 0.5, 
+                                  size=18)) # adjusting the title to be centered
+
+plot_B
+```
+  
+
 # Plot C
 * Use the covid_ages dataframe
 * Make a bar plot and change the colors of your bar plot
 * Use theme_minimal() to remove the gray background
 * Use theme() to center the title, remove the legend, and rotate the x-axis labels
 
+```{r fig.width = 6, fig.height = 4}
+plot_C <- ggplot(covid_ages, 
+                 aes(x = age_categories),
+                 group_by(result == "Positive")) +
+  geom_bar(position = "stack",
+           fill = "#2ca02c") + # Make a bar plot and change the color of the bar plot to a specific color
+  labs(title="Positive Tests \n by Age Group", # Change the labels on the x-axis, y-axis and title
+       x ="Age", 
+       y = "Number of \n Positive Tests") + # Change the labels on the x-axis, y-axis, and title
+  theme_minimal() + # remove the gray background
+  theme(plot.title = element_text(hjust = 0.5, 
+                                  size=18)) # adjusting the title to be centered
+
+plot_C
+```
+
 # Putting the plots together
 * Use ggpubr::ggarrange to arrange the plots
 * Label the plots “A”, “B”, and “C”
 * Create a common legend and put this at the bottom of the plot
+
+```{r fig.width = 10, fig.height = 7}
+# arrange the plots and label the plots “A”, “B”, and “C”
+covid_combined <- ggarrange(plot_A,
+                            ggarrange(plot_B, 
+                                      plot_C, 
+                                      ncol = 2, 
+                                      labels = c("B", "C")),
+                            nrow = 2,
+                            labels = "A",
+                            common.legend = TRUE, # Create a common legend
+                            legend = c("bottom")) # put the legend at the bottom of the plot
+
+covid_combined
+```
