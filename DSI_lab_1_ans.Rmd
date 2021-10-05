@@ -16,6 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 Dingxin Lu
 Worked with Peizheng Chen in class and outside of class
 
+[My github link] https://github.com/sydneydlu98/DSI_lab_1
+
 # Load libraries and data wrangling
 
 * Load required libraries
